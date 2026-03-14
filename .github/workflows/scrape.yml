@@ -1,0 +1,47 @@
+name: Instagram Scraper
+
+on:
+  # Execução agendada — padrão: todo domingo à meia-noite UTC
+  # Ajuste o cron conforme a frequência desejada.
+  # Exemplos:
+  #   A cada 7 dias (domingo à meia-noite): '0 0 * * 0'
+  #   A cada 3 dias: '0 0 */3 * *'
+  #   Todo dia às 8h: '0 8 * * *'
+  schedule:
+    - cron: '0 0 * * 0'
+
+  # Permite execução manual pelo GitHub
+  workflow_dispatch:
+
+jobs:
+  scrape-and-email:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependências
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Executar scraper
+        env:
+          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+          PROFILES: ${{ secrets.PROFILES }}
+          DAYS_BACK: ${{ secrets.DAYS_BACK }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          MAX_POSTS_PER_PROFILE: ${{ secrets.MAX_POSTS_PER_PROFILE }}
+        run: python main.py

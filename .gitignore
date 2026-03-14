@@ -1,0 +1,26 @@
+# Config with real credentials
+config.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual env
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Screenshots / temp
+screenshots/
+debug_screenshots/
+*.png
+*.jpg

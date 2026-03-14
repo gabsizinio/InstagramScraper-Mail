@@ -1,0 +1,19 @@
+{
+  "instagram": {
+    "username": "SEU_USUARIO",
+    "password": "SUA_SENHA"
+  },
+  "profiles": [
+    "https://www.instagram.com/perfil1/",
+    "https://www.instagram.com/perfil2/"
+  ],
+  "days_back": 7,
+  "max_posts_per_profile": 5,
+  "email": {
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "sender_email": "seu@gmail.com",
+    "sender_password": "xxxx xxxx xxxx xxxx",
+    "recipient_email": "destino@email.com"
+  }
+}
