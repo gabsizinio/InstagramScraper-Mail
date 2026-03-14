@@ -51,8 +51,14 @@ class InstagramScraper:
         self._context: BrowserContext | None = None
         self._page: Page | None = None
 
-    def start(self) -> None:
-        """Inicializa o browser com configurações anti-detecção."""
+    def start(self, session_file: str | None = None) -> None:
+        """Inicializa o browser com configurações anti-detecção.
+
+        Args:
+            session_file: Caminho para um arquivo de storage_state do Playwright
+                          (gerado por save_session.py). Se fornecido, a sessão
+                          autenticada é restaurada e o login manual é desnecessário.
+        """
         logger.info("Iniciando browser...")
         self._playwright = sync_playwright().start()
 
@@ -68,14 +74,18 @@ class InstagramScraper:
         user_agent = random.choice(USER_AGENTS)
         logger.info(f"User-Agent selecionado: {user_agent[:50]}...")
 
-        self._context = self._browser.new_context(
+        context_kwargs = dict(
             user_agent=user_agent,
             viewport={"width": 1920, "height": 1080},
             locale="pt-BR",
             timezone_id="America/Sao_Paulo",
-            # Desabilita detecção de automação
             java_script_enabled=True,
         )
+        if session_file and os.path.exists(session_file):
+            context_kwargs["storage_state"] = session_file
+            logger.info(f"Sessão carregada de '{session_file}' — login automático ignorado.")
+
+        self._context = self._browser.new_context(**context_kwargs)
 
         # Remove a propriedade navigator.webdriver que delata automação
         self._context.add_init_script("""
@@ -253,33 +263,6 @@ class InstagramScraper:
 
         logger.info(f"Total de {len(urls)} posts detectados em @{username}")
         return urls
-
-    def scrape_post(self, post_url: str) -> dict | None:
-        """
-        Coleta a descrição de um post individual.
-
-        Args:
-            post_url: URL completa do post.
-
-        Returns:
-            Dict com 'url', 'description', 'datetime' ou None se falhar.
-        """
-        page = self._page
-        logger.info(f"Acessando post: {post_url}")
-
-        # Usar domcontentloaded para evitar timeouts com networkidle
-        try:
-            page.goto(post_url, wait_until="domcontentloaded", timeout=30000)
-            _human_delay(3, 5)
-        except Exception as e:
-            logger.error(f"Erro ao acessar post {post_url}: {e}")
-            return None
-
-        post_data = {
-            "url": post_url,
-            "description": "",
-            "datetime": None,
-        }
 
     def scrape_post(self, post_url: str) -> dict | None:
         """

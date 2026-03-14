@@ -1,6 +1,9 @@
 # Config with real credentials
 config.json
 
+# Sessão autenticada do Instagram (nunca commitar)
+instagram_session.json
+
 # Python
 __pycache__/
 *.py[cod]

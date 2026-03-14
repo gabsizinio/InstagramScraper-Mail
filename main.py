@@ -158,15 +158,26 @@ def main():
     # 2. Inicializar scraper
     scraper = InstagramScraper(headless=True)
 
-    try:
-        scraper.start()
+    # Verificar se existe um arquivo de sessão salvo (gerado por save_session.py)
+    # A env var INSTAGRAM_SESSION_FILE permite sobrescrever o caminho padrão.
+    session_file = os.environ.get(
+        "INSTAGRAM_SESSION_FILE",
+        os.path.join(os.path.dirname(__file__), "instagram_session.json"),
+    )
+    using_session = os.path.exists(session_file)
 
-        # 3. Login
-        logger.info("Fazendo login no Instagram...")
-        success = scraper.login(ig_config["username"], ig_config["password"])
-        if not success:
-            logger.error("Falha no login. Verifique suas credenciais.")
-            sys.exit(1)
+    try:
+        scraper.start(session_file=session_file if using_session else None)
+
+        # 3. Login (ignorado se sessão salva estiver disponível)
+        if using_session:
+            logger.info("Sessão autenticada carregada — etapa de login ignorada.")
+        else:
+            logger.info("Fazendo login no Instagram...")
+            success = scraper.login(ig_config["username"], ig_config["password"])
+            if not success:
+                logger.error("Falha no login. Verifique suas credenciais.")
+                sys.exit(1)
 
         # 4. Coletar posts e enviar um email por perfil
         total_posts = 0

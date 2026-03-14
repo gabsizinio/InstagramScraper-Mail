@@ -32,6 +32,10 @@ jobs:
           playwright install chromium
           playwright install-deps chromium
 
+      - name: Restaurar sessão do Instagram
+        if: ${{ secrets.INSTAGRAM_SESSION != '' }}
+        run: echo '${{ secrets.INSTAGRAM_SESSION }}' > instagram_session.json
+
       - name: Executar scraper
         env:
           INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
