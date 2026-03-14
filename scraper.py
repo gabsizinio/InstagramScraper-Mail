@@ -10,7 +10,7 @@ import time
 import os
 import re
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright, Page, BrowserContext
@@ -393,24 +393,18 @@ class InstagramScraper:
         return post_data
 
     def scrape_posts_from_profile(
-        self, profile_url: str, days_back: int, max_posts: int = 5
+        self, profile_url: str, max_posts: int = 5
     ) -> list[dict]:
         """
-        Coleta posts de um perfil filtrados por período.
+        Coleta os X posts mais recentes de um perfil.
 
         Args:
             profile_url: URL do perfil.
-            days_back: Quantos dias atrás considerar.
             max_posts: Número máximo de posts a coletar por perfil.
 
         Returns:
-            Lista de dicts com dados dos posts dentro do período.
+            Lista de dicts com dados dos posts.
         """
-        cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_back)
-        logger.info(
-            f"Filtrando posts a partir de {cutoff_date.strftime('%Y-%m-%d %H:%M')}"
-        )
-
         post_urls = self.scrape_profile(profile_url)
         if len(post_urls) > max_posts:
             logger.info(f"Limitando coleta aos primeiros {max_posts} de {len(post_urls)} posts detectados.")
@@ -424,23 +418,7 @@ class InstagramScraper:
             if post_data is None:
                 continue
 
-            # Se conseguimos extrair a data, filtramos
-            if post_data["datetime"]:
-                if post_data["datetime"] < cutoff_date:
-                    # Posts estão em ordem cronológica reversa (mais novo primeiro),
-                    # então se este é mais antigo que o corte, os próximos também serão.
-                    logger.info(
-                        f"Post de {post_data['datetime'].strftime('%Y-%m-%d')} "
-                        f"é anterior ao período — parando coleta deste perfil."
-                    )
-                    break
-                posts.append(post_data)
-            else:
-                # Sem data, inclui mesmo assim (melhor ter demais que de menos)
-                logger.warning(
-                    "Post sem data detectada — incluindo por precaução."
-                )
-                posts.append(post_data)
+            posts.append(post_data)
 
         # Extrair username para adicionar nos dados
         parsed = urlparse(profile_url)

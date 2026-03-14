@@ -187,7 +187,7 @@ def main():
             logger.info(f"{'—' * 40}")
 
             try:
-                posts = scraper.scrape_posts_from_profile(profile_url, days_back, max_posts)
+                posts = scraper.scrape_posts_from_profile(profile_url, max_posts)
                 logger.info(f"✅ {len(posts)} posts coletados")
             except Exception as e:
                 logger.error(f"Erro ao processar {profile_url}: {e}")
@@ -198,7 +198,7 @@ def main():
                 profile_name = posts[0].get("profile", "")
                 send_email(
                     posts=posts,
-                    days_back=days_back,
+                    max_posts=max_posts,
                     smtp_server=email_config["smtp_server"],
                     smtp_port=email_config["smtp_port"],
                     sender_email=email_config["sender_email"],

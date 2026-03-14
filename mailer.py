@@ -15,7 +15,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 
-def _build_html(posts: list[dict], days_back: int) -> str:
+def _build_html(posts: list[dict], max_posts: int) -> str:
     """
     Monta o corpo HTML do email com os posts agrupados por perfil.
     """
@@ -120,7 +120,7 @@ def _build_html(posts: list[dict], days_back: int) -> str:
     <body>
         <div class="header">
             <h1>📸 Instagram Digest</h1>
-            <p>Posts dos últimos {days_back} dias — {today}</p>
+            <p>Últimos {max_posts} posts — {today}</p>
         </div>
     """
 
@@ -186,7 +186,7 @@ def _build_html(posts: list[dict], days_back: int) -> str:
 
 def send_email(
     posts: list[dict],
-    days_back: int,
+    max_posts: int,
     smtp_server: str,
     smtp_port: int,
     sender_email: str,
@@ -199,7 +199,7 @@ def send_email(
     """
     today = datetime.now().strftime("%d/%m/%Y")
     profile_label = f" · {profile_name}" if profile_name else ""
-    subject = f"📸 Instagram Digest{profile_label} — {today} (últimos {days_back} dias)"
+    subject = f"📸 Instagram Digest{profile_label} — {today} (últimos {max_posts} posts)"
 
     # Usar 'related' para permitir imagens inline (CID)
     msg = MIMEMultipart("related")
@@ -225,7 +225,7 @@ def send_email(
     msg_alternative.attach(MIMEText(plain_text, "plain", "utf-8"))
 
     # Versão HTML (gera CIDs nos posts)
-    html_body = _build_html(posts, days_back)
+    html_body = _build_html(posts, max_posts)
     msg_alternative.attach(MIMEText(html_body, "html", "utf-8"))
 
     # Anexar as imagens referenciadas por CID
